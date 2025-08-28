@@ -1,9 +1,7 @@
 package com.worldpopulation;
 
-import java.sql.Connection;
-import java.sql.Driver;
-import java.sql.DriverManager;
-import java.sql.SQLException;
+import java.sql.*;
+import java.util.ArrayList;
 
 public class Main {
 
@@ -23,9 +21,35 @@ public class Main {
         return con;
     }
 
+    protected ArrayList<Country> read_DB(Connection con) {
+        ArrayList<Country> countryList = new ArrayList<>();
+        try {
+            PreparedStatement stat = con.prepareStatement("SELECT country_name, capital_name, region_name," +
+                    " sub_region_name FROM population");
+            ResultSet rs = stat.executeQuery();
+            while (rs.next()) {
+                countryList.add(new Country(rs.getString(1), rs.getString(2),
+                        rs.getString(3), rs.getString(4)));
+            }
+            rs.close();
+            stat.close();
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return countryList;
+    }
+
     public static void main(String[] args) {
         Main m = new Main();
         Connection con =  m.getConnection("localhost", 3306,"world_population","root","");
+        ArrayList<Country> countryList = m.read_DB(con);
+        System.out.println(countryList.getLast());
 
+        try {
+            con.close();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 }
